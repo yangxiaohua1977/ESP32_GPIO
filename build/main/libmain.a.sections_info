@@ -1,0 +1,111 @@
+In archive F:/MyPrivate/ESP32/esp32_win32_msys2_environment_and_toolchain-20181001/msys32/home/yangx/esp/esp-idf/examples/peripherals/gpio/build/main/libmain.a:
+
+i2s_example_main.o:     file format elf32-xtensa-le
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .literal.voice_play 00000028  00000000  00000000  00000034  2**2
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE
+  1 .literal.i2s_setup 00000024  00000000  00000000  0000005c  2**2
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE
+  2 .text         00000000  00000000  00000000  00000080  2**0
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  3 .data         00000000  00000000  00000000  00000080  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  4 .bss          00000000  00000000  00000000  00000080  2**0
+                  ALLOC
+  5 .text.voice_play 0000005a  00000000  00000000  00000080  2**2
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE
+  6 .rodata       00000010  00000000  00000000  000000dc  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  7 .text.i2s_setup 0000008a  00000000  00000000  000000ec  2**2
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE
+  8 .data.pcm_example 0000d380  00000000  00000000  00000178  2**2
+                  CONTENTS, ALLOC, LOAD, DATA
+  9 .debug_frame  00000040  00000000  00000000  0000d4f8  2**2
+                  CONTENTS, RELOC, READONLY, DEBUGGING
+ 10 .debug_info   00000573  00000000  00000000  0000d538  2**0
+                  CONTENTS, RELOC, READONLY, DEBUGGING
+ 11 .debug_abbrev 00000137  00000000  00000000  0000daab  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 12 .debug_aranges 00000028  00000000  00000000  0000dbe2  2**0
+                  CONTENTS, RELOC, READONLY, DEBUGGING
+ 13 .debug_ranges 00000018  00000000  00000000  0000dc0a  2**0
+                  CONTENTS, RELOC, READONLY, DEBUGGING
+ 14 .debug_line   00000439  00000000  00000000  0000dc22  2**0
+                  CONTENTS, RELOC, READONLY, DEBUGGING
+ 15 .debug_str    000007db  00000000  00000000  0000e05b  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 16 .comment      0000003c  00000000  00000000  0000e836  2**0
+                  CONTENTS, READONLY
+ 17 .xtensa.info  00000038  00000000  00000000  0000e872  2**0
+                  CONTENTS, READONLY
+ 18 .xt.lit       00000010  00000000  00000000  0000e8aa  2**0
+                  CONTENTS, RELOC, READONLY
+ 19 .xt.prop      00000078  00000000  00000000  0000e8ba  2**0
+                  CONTENTS, RELOC, READONLY
+
+gpio_example_main.o:     file format elf32-xtensa-le
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .literal.task_voice_play 00000018  00000000  00000000  00000034  2**2
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE
+  1 .literal.task_led_flash 00000098  00000000  00000000  0000004c  2**2
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE
+  2 .literal.task_elevator_dn_arrival 0000004c  00000000  00000000  000000e4  2**2
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE
+  3 .literal.task_elevator_up_arrival 0000004c  00000000  00000000  00000130  2**2
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE
+  4 .literal.app_main 000000a4  00000000  00000000  0000017c  2**2
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE
+  5 .text         00000000  00000000  00000000  00000220  2**0
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  6 .data         00000000  00000000  00000000  00000220  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  7 .bss          00000000  00000000  00000000  00000220  2**0
+                  ALLOC
+  8 .text.task_voice_play 0000003b  00000000  00000000  00000220  2**2
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE
+  9 .rodata.str1.4 0000007f  00000000  00000000  0000025c  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+ 10 .text.task_led_flash 00000427  00000000  00000000  000002dc  2**2
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE
+ 11 .text.task_elevator_dn_arrival 000000e7  00000000  00000000  00000704  2**2
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE
+ 12 .text.task_elevator_up_arrival 000000e7  00000000  00000000  000007ec  2**2
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE
+ 13 .text.app_main 000001c4  00000000  00000000  000008d4  2**2
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE
+ 14 .bss.xVoicePlay_Semaphore 00000004  00000000  00000000  00000a98  2**2
+                  ALLOC
+ 15 .bss.xLED_Flash_Semaphore 00000004  00000000  00000000  00000a98  2**2
+                  ALLOC
+ 16 .bss.xElevator_DnArrival_Semaphore 00000004  00000000  00000000  00000a98  2**2
+                  ALLOC
+ 17 .bss.xElevator_UpArrival_Semaphore 00000004  00000000  00000000  00000a98  2**2
+                  ALLOC
+ 18 .debug_frame  00000088  00000000  00000000  00000a98  2**2
+                  CONTENTS, RELOC, READONLY, DEBUGGING
+ 19 .debug_info   00000eac  00000000  00000000  00000b20  2**0
+                  CONTENTS, RELOC, READONLY, DEBUGGING
+ 20 .debug_abbrev 000001fe  00000000  00000000  000019cc  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 21 .debug_loc    00000829  00000000  00000000  00001bca  2**0
+                  CONTENTS, RELOC, READONLY, DEBUGGING
+ 22 .debug_aranges 00000040  00000000  00000000  000023f3  2**0
+                  CONTENTS, RELOC, READONLY, DEBUGGING
+ 23 .debug_ranges 00000030  00000000  00000000  00002433  2**0
+                  CONTENTS, RELOC, READONLY, DEBUGGING
+ 24 .debug_line   00000c9b  00000000  00000000  00002463  2**0
+                  CONTENTS, RELOC, READONLY, DEBUGGING
+ 25 .debug_str    00000716  00000000  00000000  000030fe  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 26 .comment      0000003c  00000000  00000000  00003814  2**0
+                  CONTENTS, READONLY
+ 27 .xtensa.info  00000038  00000000  00000000  00003850  2**0
+                  CONTENTS, READONLY
+ 28 .xt.lit       00000028  00000000  00000000  00003888  2**0
+                  CONTENTS, RELOC, READONLY
+ 29 .xt.prop      000007bc  00000000  00000000  000038b0  2**0
+                  CONTENTS, RELOC, READONLY
