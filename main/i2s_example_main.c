@@ -24,6 +24,7 @@
 #include <math.h>
 #include "audio.h"
 #include "pcm_code.h"
+#include "pcm_code_16k.h"
 
 #define SAMPLE_RATE     (16000)
 #define I2S_NUM         (0)
@@ -38,13 +39,13 @@
 */
 void voice_play(void)
 {
-    uint8_t *samples_data = malloc(3384 * 16 * 2);
+    uint8_t *samples_data = malloc(6768 * 16 * 2);
     size_t i2s_bytes_write = 0;
     
-    memset(samples_data,0, 3384*16*2);
-    memcpy(samples_data, pcm_example, 3384 * 16);
+    memset(samples_data,0, 6768*16*2);
+    memcpy(samples_data, pcm_sample_16k, 6768 * 16);
     i2s_set_clk(I2S_NUM, SAMPLE_RATE, 16, 1);
-    i2s_write(I2S_NUM, samples_data, 3384 * 16, &i2s_bytes_write, portMAX_DELAY);
+    i2s_write(I2S_NUM, samples_data, 6768 * 16, &i2s_bytes_write, portMAX_DELAY);
     free(samples_data);
 }
 /*
