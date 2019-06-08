@@ -80,7 +80,7 @@ static void task_voice_play(void* arg)
 	}
 }
 #endif
-static void task_elevator_up_arrival(void* arg)
+static void task_elevator_1_arrival(void* arg)
 {
     uint8_t timecnt_up = 0;
     uint8_t timecnt_dn = 0;
@@ -124,7 +124,7 @@ static void task_elevator_up_arrival(void* arg)
     		vTaskDelay(10 / portTICK_RATE_MS);
     }
 }
-static void task_elevator_dn_arrival(void* arg)
+static void task_elevator_2_arrival(void* arg)
 {
     uint8_t timecnt_up = 0;
     uint8_t timecnt_dn = 0;
@@ -474,12 +474,9 @@ void app_main()
     	//enable pull-up mode
     	io_conf.pull_up_en = 1;
  
-     WRITE_PERI_REG(PIN_CTRL,(CLK_OUT3<<CLK_OUT3_S) | (CLK_OUT2 << CLK_OUT2_S) | (0 << CLK_OUT1_S) );
-		 PIN_INPUT_DISABLE(PERIPHS_IO_MUX_GPIO0_U);
-		//PIN_SLP_OE_ENABLE(PERIPHS_IO_MUX_GPIO0_U);
-		//PIN_PULL_UP_ENABLE(PERIPHS_IO_MUX_GPIO0_U);
-	
-			PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO0_U, FUNC_GPIO0_CLK_OUT1);
+     	WRITE_PERI_REG(PIN_CTRL,(CLK_OUT3<<CLK_OUT3_S) | (CLK_OUT2 << CLK_OUT2_S) | (0 << CLK_OUT1_S) );
+	PIN_INPUT_DISABLE(PERIPHS_IO_MUX_GPIO0_U);
+	PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO0_U, FUNC_GPIO0_CLK_OUT1);
     	
     	gpio_config(&io_conf);
 
@@ -525,11 +522,11 @@ void app_main()
     	xElevator_UpArrival_Semaphore = xSemaphoreCreateBinary();
     	xElevator_DnArrival_Semaphore = xSemaphoreCreateBinary();
     	xLED_Flash_Semaphore =  xSemaphoreCreateBinary();
-			xVoicePlay_Semaphore =  xSemaphoreCreateBinary();	
+	xVoicePlay_Semaphore =  xSemaphoreCreateBinary();	
     	//start gpio task
-    	xTaskCreate(task_elevator_up_arrival, "elevator Up Arrival", 2048, NULL, 10, NULL);
-    	xTaskCreate(task_elevator_dn_arrival, "elevator Dn Arrival", 2048, NULL, 10, NULL);
- 		xTaskCreate(task_led_flash, "led on", 2048, NULL, 11, NULL);
+    	xTaskCreate(task_elevator_1_arrival, "elevator 1 Arrival", 2048, NULL, 10, NULL);
+    	xTaskCreate(task_elevator_2_arrival, "elevator 2 Arrival", 2048, NULL, 10, NULL);
+	xTaskCreate(task_led_flash, "led on", 2048, NULL, 11, NULL);
   	xTaskCreate(task_voice_play, "voice play", 2048, NULL, 12, NULL);
 
     	while(1) 
