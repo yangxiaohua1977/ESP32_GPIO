@@ -18,18 +18,7 @@
 
 /**
  * Brief:
- * This test code shows how to configure gpio and how to use gpio interrupt.
- *
- * GPIO status:
- * GPIO18: output
- * GPIO19: output
- * GPIO4:  input, pulled up, interrupt from rising edge and falling edge
- * GPIO5:  input, pulled up, interrupt from rising edge.
- *
- * Test:
- * Connect GPIO18 with GPIO4
- * Connect GPIO19 with GPIO5
- * Generate pulses on GPIO18/19, that triggers interrupt on GPIO4/5
+ * Detect the evevator up/dn arrival, then, turn on and flash the LED lights, play the voice
  *
  */
 
@@ -61,11 +50,17 @@
 extern void voice_play(void);
 extern void i2s_setup(void);
 
-SemaphoreHandle_t xElevator_UpArrival_Semaphore = NULL;
-SemaphoreHandle_t xElevator_DnArrival_Semaphore = NULL;
-SemaphoreHandle_t xLED_Flash_Semaphore = NULL;
+SemaphoreHandle_t xElevator1_UpArrival_Semaphore = NULL;
+SemaphoreHandle_t xElevator1_DnArrival_Semaphore = NULL;
+SemaphoreHandle_t xElevator2_UpArrival_Semaphore = NULL;
+SemaphoreHandle_t xElevator2_DnArrival_Semaphore = NULL;
+SemaphoreHandle_t xLED1_Flash_Semaphore = NULL;
+SemaphoreHandle_t xLED2_Flash_Semaphore = NULL;
 SemaphoreHandle_t xVoicePlay_Semaphore = NULL;
-#if 1
+/*
+* Brief:
+* 	when semaphore is activity, Play the voice via I2S
+*/
 static void task_voice_play(void* arg)
 {
 	for(;;)
@@ -79,7 +74,11 @@ static void task_voice_play(void* arg)
 			vTaskDelay(10 / portTICK_RATE_MS);
 	}
 }
-#endif
+/*
+* Brief:
+*	detect the up/dn arrival of elevator 1, and send signal to led task and voice task.
+*	waiting until the led task is over
+*/
 static void task_elevator_1_arrival(void* arg)
 {
     uint8_t timecnt_up = 0;
@@ -105,25 +104,30 @@ static void task_elevator_1_arrival(void* arg)
     		}
     		if(timecnt_up == 10) {
     			timecnt_up = 0;
-    			xSemaphoreGive(xElevator_UpArrival_Semaphore);
+    			xSemaphoreGive(xElevator1_UpArrival_Semaphore);
     			xSemaphoreGive(xVoicePlay_Semaphore);
     			vTaskDelay(100 / portTICK_RATE_MS);
-    			xSemaphoreTake(xLED_Flash_Semaphore, portMAX_DELAY);
+    			xSemaphoreTake(xLED1_Flash_Semaphore, portMAX_DELAY);
     			vTaskDelay(100 / portTICK_RATE_MS);
     		}
     		else {
     			if(timecnt_dn == 10) {
     				timecnt_dn = 0;
-    				xSemaphoreGive(xElevator_DnArrival_Semaphore);
+    				xSemaphoreGive(xElevator1_DnArrival_Semaphore);
     				xSemaphoreGive(xVoicePlay_Semaphore);
     				vTaskDelay(100 / portTICK_RATE_MS);
-    				xSemaphoreTake(xLED_Flash_Semaphore, portMAX_DELAY);
+    				xSemaphoreTake(xLED1_Flash_Semaphore, portMAX_DELAY);
     				vTaskDelay(100 / portTICK_RATE_MS);
     			}
     		}
     		vTaskDelay(10 / portTICK_RATE_MS);
     }
 }
+/*
+* Brief:
+* 	detect the up/dn arrival of elevator 2, and send signal to led task and voice task 
+* 	wating until led task is over
+*/
 static void task_elevator_2_arrival(void* arg)
 {
     uint8_t timecnt_up = 0;
@@ -149,26 +153,32 @@ static void task_elevator_2_arrival(void* arg)
     		}
     		if(timecnt_up == 10) {
     			timecnt_up = 0;
-    			xSemaphoreGive(xElevator_UpArrival_Semaphore);
+    			xSemaphoreGive(xElevator2_UpArrival_Semaphore);
     			xSemaphoreGive(xVoicePlay_Semaphore);
     			vTaskDelay(100 / portTICK_RATE_MS);
-    			xSemaphoreTake(xLED_Flash_Semaphore, portMAX_DELAY);
+    			xSemaphoreTake(xLED2_Flash_Semaphore, portMAX_DELAY);
     			vTaskDelay(100 / portTICK_RATE_MS);
     		}
     		else {
     			if(timecnt_dn == 10) {
     				timecnt_dn = 0;
-    				xSemaphoreGive(xElevator_DnArrival_Semaphore);
+    				xSemaphoreGive(xElevator2_DnArrival_Semaphore);
     				xSemaphoreGive(xVoicePlay_Semaphore);
     				vTaskDelay(100 / portTICK_RATE_MS);
-    				xSemaphoreTake(xLED_Flash_Semaphore, portMAX_DELAY);
+    				xSemaphoreTake(xLED2_Flash_Semaphore, portMAX_DELAY);
     				vTaskDelay(100 / portTICK_RATE_MS);
     			}
     		}
     		vTaskDelay(10 / portTICK_RATE_MS);
     }
 }
-static void task_led_flash(void* arg)
+/*
+* Brief:
+* 	led task for elevator 1
+* 	if the semaphore is activity, the led turned off firstly, then it will be turned on in turn.
+* 	all the lights will be turn on at last 
+*/
+static void task_led1_flash(void* arg)
 {
     uint8_t index, indey, datmp, bitcnt;
     uint32_t timecnt;
@@ -176,7 +186,7 @@ static void task_led_flash(void* arg)
     		/*
     		* elevator up
     		*/
-	if(xSemaphoreTake(xElevator_UpArrival_Semaphore, 0)) 
+	if(xSemaphoreTake(xElevator1_UpArrival_Semaphore, 0)) 
 	{
 		printf("DianTi Up Arrival\n");
 		/*
@@ -306,12 +316,12 @@ static void task_led_flash(void* arg)
 				}
 			}		
 		}
-		xSemaphoreGive(xLED_Flash_Semaphore);		
-  }
+		xSemaphoreGive(xLED1_Flash_Semaphore);		
+  	}
 	/*
 	* elevator down
 	*/
-	if(xSemaphoreTake(xElevator_DnArrival_Semaphore, 0)) 
+	if(xSemaphoreTake(xElevator1_DnArrival_Semaphore, 0)) 
 	{
 		printf("DianTi Down Arrival\n");
 		/*
@@ -441,12 +451,293 @@ static void task_led_flash(void* arg)
 				}
 			}
 		}
-		xSemaphoreGive(xLED_Flash_Semaphore);		
+		xSemaphoreGive(xLED1_Flash_Semaphore);		
   	}
   	vTaskDelay(100 / portTICK_RATE_MS);
     }
 }
-
+/*
+* Brief:
+* 	led task for elevator 2
+*/
+static void task_led2_flash(void* arg)
+{
+    uint8_t index, indey, datmp, bitcnt;
+    uint32_t timecnt;
+    for(;;) {
+    		/*
+    		* elevator up
+    		*/
+	if(xSemaphoreTake(xElevator2_UpArrival_Semaphore, 0)) 
+	{
+		printf("DianTi Up Arrival\n");
+		/*
+		* TURN OFF ALL LIGHT 
+		*/
+		for(index =0; index < LED_NUM; index++)
+		{
+			for(indey = 0; indey < 3 * LED_NUM; indey++) 
+			{
+				if(index==(LED_NUM-1))
+				{
+					datmp = 0x00;
+				}
+				else { 
+					datmp = 0xFF;
+				}
+				for(bitcnt = 0; bitcnt <8; bitcnt++) 
+				{
+					if((datmp << bitcnt) & 0x80) 
+					{
+						gpio_set_level(GPIO_LED_DN, 0);
+						for(timecnt =0; timecnt < ONE_CODE_H; timecnt++)
+						{
+							;
+						}
+						gpio_set_level(GPIO_LED_DN, 1);
+						for(timecnt =0; timecnt < ONE_CODE_L; timecnt++)
+						{
+							;
+						}
+					}
+					else {
+						gpio_set_level(GPIO_LED_DN, 0);
+						for(timecnt =0; timecnt < ZERO_CODE_H; timecnt++)
+						{
+							;
+						}
+						gpio_set_level(GPIO_LED_DN, 1);
+						for(timecnt =0; timecnt < ZERO_CODE_L; timecnt++)
+						{
+							;
+						}										
+					}
+				}
+			}
+		}						
+		/*
+		* set the lights
+		*/
+		for(index =LED_NUM; index > 0; index--)
+		{
+			for(indey = 0; indey < 3 * LED_NUM; indey++) 
+			{
+				if(indey < 3 * (index-1)) 
+				{
+					datmp = 0x00;
+				}
+				else { 
+					datmp = 0xFF;
+				}
+				for(bitcnt = 0; bitcnt <8; bitcnt++) 
+				{
+					if((datmp << bitcnt) & 0x80) 
+					{
+						gpio_set_level(GPIO_LED_DN, 0);
+						for(timecnt = 0; timecnt < ONE_CODE_H; timecnt++)
+						{
+							;
+						}
+						gpio_set_level(GPIO_LED_DN, 1);
+						for(timecnt =0; timecnt < ONE_CODE_L; timecnt++)
+						{
+							;
+						}
+					}
+					else {
+						gpio_set_level(GPIO_LED_DN, 0);
+						for(timecnt =0; timecnt < ZERO_CODE_H; timecnt++)
+						{
+							;
+						}
+						gpio_set_level(GPIO_LED_DN, 1);
+						for(timecnt =0; timecnt < ZERO_CODE_L; timecnt++)
+						{
+							;
+						}										
+					}
+				}
+			}
+			vTaskDelay(150 / portTICK_RATE_MS);						
+		}
+		/*
+		* TURN ON ALL LIGHT 
+		*/
+		for(index =0; index < LED_NUM; index++)
+		{
+			for(indey = 0; indey < 3 * LED_NUM; indey++) 
+			{
+				datmp = 0xff;
+				for(bitcnt = 0; bitcnt <8; bitcnt++) 
+				{
+					if((datmp << bitcnt) & 0x80) 
+					{
+						gpio_set_level(GPIO_LED_DN, 0);
+						for(timecnt =0; timecnt < ONE_CODE_H; timecnt++)
+						{
+							;
+						}
+						gpio_set_level(GPIO_LED_DN, 1);
+						for(timecnt =0; timecnt < ONE_CODE_L; timecnt++)
+						{
+							;
+						}
+					}
+					else {
+						gpio_set_level(GPIO_LED_DN, 0);
+						for(timecnt =0; timecnt < ZERO_CODE_H; timecnt++)
+						{
+							;
+						}
+						gpio_set_level(GPIO_LED_DN, 1);
+						for(timecnt =0; timecnt < ZERO_CODE_L; timecnt++)
+						{
+							;
+						}										
+					}
+				}
+			}		
+		}
+		xSemaphoreGive(xLED2_Flash_Semaphore);		
+  	}
+	/*
+	* elevator down
+	*/
+	if(xSemaphoreTake(xElevator2_DnArrival_Semaphore, 0)) 
+	{
+		printf("DianTi Down Arrival\n");
+		/*
+		* TURN OFF ALL LIGHT 
+		*/
+		for(index =0; index < LED_NUM; index++)
+		{
+			for(indey = 0; indey < 3 * LED_NUM; indey++) 
+			{
+				if(index==(LED_NUM-1)) 
+				{
+					datmp = 0x00;
+				}
+				else {
+					datmp = 0xff;
+				}
+				for(bitcnt = 0; bitcnt <8; bitcnt++) 
+				{
+					if((datmp << bitcnt) & 0x80) 
+					{
+						gpio_set_level(GPIO_LED_DN, 0);
+						for(timecnt =0; timecnt < ONE_CODE_H; timecnt++)
+						{
+							;
+						}
+						gpio_set_level(GPIO_LED_DN, 1);
+						for(timecnt =0; timecnt < ONE_CODE_L; timecnt++)
+						{
+							;
+						}
+					}
+					else {
+						gpio_set_level(GPIO_LED_DN, 0);
+						for(timecnt =0; timecnt < ZERO_CODE_H; timecnt++)
+						{
+							;
+						}
+						gpio_set_level(GPIO_LED_DN, 1);
+						for(timecnt =0; timecnt < ZERO_CODE_L; timecnt++)
+						{
+							;
+						}										
+					}
+				}
+			}
+		}							
+		/*
+		*	set the light
+		*/
+		for(index =0; index < LED_NUM; index++)
+		{
+			for(indey = 0; indey < 3 * LED_NUM; indey++) 
+			{
+				if(indey < 3 * (index+1)) 
+				{
+					datmp = 0xFF;
+				}
+				else {
+					datmp = 0x00;
+				}
+				for(bitcnt = 0; bitcnt <8; bitcnt++) 
+				{
+					if((datmp << bitcnt) & 0x80) 
+					{
+						gpio_set_level(GPIO_LED_DN, 0);
+						for(timecnt =0; timecnt < ONE_CODE_H; timecnt++)
+						{
+							;
+						}
+						gpio_set_level(GPIO_LED_DN, 1);
+						for(timecnt =0; timecnt < ONE_CODE_L; timecnt++)
+						{
+							;
+						}
+					}
+					else {
+						gpio_set_level(GPIO_LED_DN, 0);
+						for(timecnt =0; timecnt < ZERO_CODE_H; timecnt++)
+						{
+							;
+						}
+						gpio_set_level(GPIO_LED_DN, 1);
+						for(timecnt =0; timecnt < ZERO_CODE_L; timecnt++)
+						{
+							;
+						}										
+					}
+				}
+			}
+			vTaskDelay(150 / portTICK_RATE_MS);						
+		}
+		/*
+		* TURN ON ALL LED LIGHTS 
+		*/
+		for(index =0; index < LED_NUM; index++)
+		{
+			for(indey = 0; indey < 3 * LED_NUM; indey++) 
+			{
+				datmp = 0xff;
+				for(bitcnt = 0; bitcnt <8; bitcnt++) 
+				{
+					if((datmp << bitcnt) & 0x80) 
+					{
+						gpio_set_level(GPIO_LED_DN, 0);
+						for(timecnt =0; timecnt < ONE_CODE_H; timecnt++)
+						{
+							;
+						}
+						gpio_set_level(GPIO_LED_DN, 1);
+						for(timecnt =0; timecnt < ONE_CODE_L; timecnt++)
+						{
+							;
+						}
+					}
+					else {
+						gpio_set_level(GPIO_LED_DN, 0);
+						for(timecnt =0; timecnt < ZERO_CODE_H; timecnt++)
+						{
+							;
+						}
+						gpio_set_level(GPIO_LED_DN, 1);
+						for(timecnt =0; timecnt < ZERO_CODE_L; timecnt++)
+						{
+							;
+						}										
+					}
+				}
+			}
+		}
+		xSemaphoreGive(xLED2_Flash_Semaphore);		
+  	}
+  	vTaskDelay(100 / portTICK_RATE_MS);
+    }
+}
 void app_main()
 {
 	uint8_t index, indey, datmp, bitcnt;
@@ -492,11 +783,13 @@ void app_main()
 				if((datmp << bitcnt) & 0x80) 
 				{
 					gpio_set_level(GPIO_LED_UP, 0);
+					gpio_set_level(GPIO_LED_DN, 0);
 					for(timecnt =0; timecnt < ONE_CODE_H; timecnt++)
 					{
 						;
 					}
 					gpio_set_level(GPIO_LED_UP, 1);
+					gpio_set_level(GPIO_LED_DN, 1);
 					for(timecnt =0; timecnt < ONE_CODE_L; timecnt++)
 					{
 						;
@@ -504,11 +797,13 @@ void app_main()
 				}
 				else {
 					gpio_set_level(GPIO_LED_UP, 0);
+					gpio_set_level(GPIO_LED_DN, 0);
 					for(timecnt =0; timecnt < ZERO_CODE_H; timecnt++)
 					{
 						;
 					}
 					gpio_set_level(GPIO_LED_UP, 1);
+					gpio_set_level(GPIO_LED_DN, 1);
 					for(timecnt =0; timecnt < ZERO_CODE_L; timecnt++)
 					{
 						;
@@ -519,14 +814,18 @@ void app_main()
 	}
 
     	//create a queue to handle gpio event from isr
-    	xElevator_UpArrival_Semaphore = xSemaphoreCreateBinary();
-    	xElevator_DnArrival_Semaphore = xSemaphoreCreateBinary();
-    	xLED_Flash_Semaphore =  xSemaphoreCreateBinary();
+    	xElevator1_UpArrival_Semaphore = xSemaphoreCreateBinary();
+    	xElevator1_DnArrival_Semaphore = xSemaphoreCreateBinary();
+    	xLED1_Flash_Semaphore =  xSemaphoreCreateBinary();
+    	xElevator2_UpArrival_Semaphore = xSemaphoreCreateBinary();
+    	xElevator2_DnArrival_Semaphore = xSemaphoreCreateBinary();
+    	xLED2_Flash_Semaphore =  xSemaphoreCreateBinary();
 	xVoicePlay_Semaphore =  xSemaphoreCreateBinary();	
     	//start gpio task
     	xTaskCreate(task_elevator_1_arrival, "elevator 1 Arrival", 2048, NULL, 10, NULL);
     	xTaskCreate(task_elevator_2_arrival, "elevator 2 Arrival", 2048, NULL, 10, NULL);
-	xTaskCreate(task_led_flash, "led on", 2048, NULL, 11, NULL);
+	xTaskCreate(task_led1_flash, "led on", 2048, NULL, 11, NULL);
+	xTaskCreate(task_led2_flash, "led on", 2048, NULL, 11, NULL);
   	xTaskCreate(task_voice_play, "voice play", 2048, NULL, 12, NULL);
 
     	while(1) 
