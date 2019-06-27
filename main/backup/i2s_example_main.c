@@ -39,18 +39,50 @@
 */
 void voice_play(void)
 {
-    uint8_t *samples_data = malloc(5920 * 16);
-    uint8_t *samples_data1 = malloc(5920 * 16);
+    uint8_t *samples_data1 = malloc(5893 * 8);
+    uint8_t *samples_data2 = malloc(5893 * 8);
     size_t i2s_bytes_write = 0;
-    memset(samples_data, 0, 5920*16);
-    memset(samples_data1, 0, 5920*16);
-    memcpy(samples_data, pcm_sample_16k, 5920 * 16);
-    memcpy(samples_data1, pcm_sample_16k+5920 * 16, 5920 * 16);
-    i2s_set_clk(I2S_NUM, SAMPLE_RATE, 16, 2); 
-    i2s_write(I2S_NUM, samples_data, 5920 * 16, &i2s_bytes_write, portMAX_DELAY);
-    i2s_write(I2S_NUM, samples_data1, 5920 * 16, &i2s_bytes_write, portMAX_DELAY);
-    free(samples_data);
+    uint8_t flag = 0;
+    memset(samples_data1, 0, 5893*8);
+    memset(samples_data2, 0, 5893*8);
+    memcpy(samples_data1, pcm_sample_16k, 5893 * 8);
+    i2s_set_clk(I2S_NUM, SAMPLE_RATE, 16, 1);
+    
+    while(1) 
+    {
+	if(i2s_write(I2S_NUM, samples_data1, 5893 * 8, &i2s_bytes_write, portMAX_DELAY) == ESP_OK) break;
+	if(flag == 0) 
+	{
+	   flag = 1;
+	   memcpy(samples_data2, pcm_sample_16k + 5893 * 8, 5893 * 8);
+	}
+    }
+    flag = 0;
+    while(1)
+    {
+    	if(i2s_write(I2S_NUM, samples_data2, 5893 * 8, &i2s_bytes_write, portMAX_DELAY) == ESP_OK) break;
+	if(flag ==0)
+	{
+	   flag = 1;
+	   memset(samples_data1, 0, 5893*8);
+	   memcpy(samples_data1, pcm_sample_16k + 5893 * 16, 5893 * 8);
+	}
+    }
+    flag = 0;
+    while(1)
+    {
+    	if(i2s_write(I2S_NUM, samples_data1, 5893 * 8, &i2s_bytes_write, portMAX_DELAY) == ESP_OK) break;
+	if(flag ==0)
+	{
+	   flag = 1;
+	   memset(samples_data2, 0, 5893*8);
+	   memcpy(samples_data2, pcm_sample_16k + 5893 * 24, 5893 * 8);
+	}
+    }
+
+    i2s_write(I2S_NUM, samples_data2, 5893 * 8, &i2s_bytes_write, portMAX_DELAY);
     free(samples_data1);
+    free(samples_data2);
 }
 /*
 * Initialize I2S for 16kHz sample rate and 16bit data length

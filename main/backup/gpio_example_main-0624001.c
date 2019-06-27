@@ -53,14 +53,7 @@
 #define PIN_NUM_CLK  19
 #define PIN_NUM_CS   18
 
-
-#define PIN_NUM_MISO_1 27
-#define PIN_NUM_MOSI_1 22
-#define PIN_NUM_CLK_1  14
-#define PIN_NUM_CS_1   12
-
 spi_device_handle_t spi;
-spi_device_handle_t spi_1;
 
 extern void voice_play(void);
 extern void i2s_setup(void);
@@ -83,7 +76,6 @@ static void task_voice_play(void* arg)
 		if(xSemaphoreTake(xVoicePlay_Semaphore, 0)) 
 		{
 			gpio_set_level(GPIO_PA_EN, 1);
-			vTaskDelay(30 / portTICK_RATE_MS);
 			voice_play();
 			gpio_set_level(GPIO_PA_EN, 0);
 		}
@@ -144,14 +136,11 @@ void led1_flash(void)
 {
     uint16_t index, cnt, indey;
 
-    esp_err_t ret, ret_1;
-    spi_transaction_t t, t_1;
+    esp_err_t ret;
+    spi_transaction_t t;
     uint8_t tmp[96 * 8];
-    uint8_t tmp_1[96 * 8];
     memset(&t, 0, sizeof(t));       //Zero out the transaction
-    memset(&t_1, 0, sizeof(t_1));       //Zero out the transaction
     t.length= 8 * 96 * 8;                 //Len is in bytes, transaction length is in bits.
-    //t_1.length= 8 * 96 * 8;                 //Len is in bytes, transaction length is in bits.
 
     if(xSemaphoreTake(xElevator_UpArrival_Semaphore, 0)) 
     {
@@ -164,17 +153,13 @@ void led1_flash(void)
 		for(indey = 0; indey < 8; indey++) 
 		{
 	    		tmp[index*8 + indey] = 0x80;
-//	    		tmp_1[index*8 + indey] = 0x80;
 		}
 	}	
 		
 	t.tx_buffer=&tmp;               //Data
-//	t_1.tx_buffer=&tmp_1;               //Data
     	ret=spi_device_polling_transmit(spi, &t);  //Transmit!
     	assert(ret==ESP_OK);   
-  //  	ret_1=spi_device_polling_transmit(spi_1, &t_1);  //Transmit!
-  //  	assert(ret_1==ESP_OK);   
-	vTaskDelay(200 / portTICK_RATE_MS);						
+	vTaskDelay(1000 / portTICK_RATE_MS);						
 
 	/*
 	* set the lights
@@ -186,7 +171,6 @@ void led1_flash(void)
 		    for(indey = 0; indey < 8; indey++) 
 		    {
 			tmp[cnt * 8 + indey]=0xf0;
-//			tmp_1[cnt * 8 + indey]=0xf0;
 		    }
 	    }
 	    for(; cnt < 3 * LED_NUM; cnt++) 
@@ -194,17 +178,13 @@ void led1_flash(void)
 		    for(indey = 0; indey < 8; indey++) 
 		    {
 		    	tmp[cnt * 8 + indey]=0x80;
-//		    	tmp_1[cnt * 8 + indey]=0x80;
 		    }
 	    }
 
 	    t.tx_buffer=&tmp;               //Data
-//	    t_1.tx_buffer=&tmp_1;               //Data
     	    ret=spi_device_polling_transmit(spi, &t);  //Transmit!
     	    assert(ret==ESP_OK);   
-//    	    ret_1=spi_device_polling_transmit(spi_1, &t_1);  //Transmit!
-//    	    assert(ret_1==ESP_OK);   
-	    vTaskDelay(30 / portTICK_RATE_MS);						
+	    vTaskDelay(50 / portTICK_RATE_MS);						
 	}	
 	
 	xSemaphoreGive(xLED_Flash_Semaphore);		
@@ -221,17 +201,13 @@ void led1_flash(void)
 		for(indey = 0; indey < 8; indey++) 
 		{
 	    		tmp[index*8 + indey] = 0x80;
-//	    		tmp_1[index*8 + indey] = 0x80;
 		}
 	}	
 		
 	t.tx_buffer=&tmp;               //Data
-//	t_1.tx_buffer=&tmp_1;               //Data
     	ret=spi_device_polling_transmit(spi, &t);  //Transmit!
     	assert(ret==ESP_OK);   
-//    	ret_1=spi_device_polling_transmit(spi_1, &t_1);  //Transmit!
-//    	assert(ret_1==ESP_OK);   
-	vTaskDelay(200 / portTICK_RATE_MS);						
+	vTaskDelay(1000 / portTICK_RATE_MS);						
 	/*
 	*	set the light
 	*/
@@ -242,7 +218,6 @@ void led1_flash(void)
 		for(indey = 0; indey < 8; indey++) 
 		{
 		 	tmp[cnt * 8 + indey]=0x80;
-//		 	tmp_1[cnt * 8 + indey]=0x80;
 	    	}
 	    }
 	    for(; cnt < 3 * LED_NUM; cnt++) 
@@ -250,16 +225,12 @@ void led1_flash(void)
 		for(indey = 0; indey < 8; indey++) 
 		{
 		 	tmp[cnt * 8 + indey]=0xf0;
-//		 	tmp_1[cnt * 8 + indey]=0xf0;
 	    	}
 	    }
 	    t.tx_buffer=&tmp;               //Data
-//	    t_1.tx_buffer=&tmp_1;               //Data
     	    ret=spi_device_polling_transmit(spi, &t);  //Transmit!
     	    assert(ret==ESP_OK);   
-//    	    ret_1=spi_device_polling_transmit(spi_1, &t_1);  //Transmit!
-//    	    assert(ret_1==ESP_OK);   
-	    vTaskDelay(30 / portTICK_RATE_MS);						
+	    vTaskDelay(50 / portTICK_RATE_MS);						
 	}	
 	/*
 	* TURN ON ALL LED LIGHTS 
@@ -281,11 +252,9 @@ void app_main()
 	uint16_t index, cnt;
 	uint32_t timecnt;
 	gpio_config_t io_conf;
-    	esp_err_t ret, ret_1;
+    	esp_err_t ret;
     	uint8_t tmp[96*8];
-    	uint8_t tmp_1[96*8];
     	spi_transaction_t t;
-    	spi_transaction_t t_1;
     	
 	io_conf.intr_type = GPIO_PIN_INTR_DISABLE;
     	io_conf.mode = GPIO_MODE_OUTPUT;
@@ -314,68 +283,37 @@ void app_main()
         	.quadhd_io_num=-1,
         	.max_transfer_sz=96 * 8 *16
     	};
-	/*
-    	spi_bus_config_t buscfg_1={
-        	.miso_io_num=PIN_NUM_MISO_1,
-        	.mosi_io_num=PIN_NUM_MOSI_1,
-        	.sclk_io_num=PIN_NUM_CLK_1,
-        	.quadwp_io_num=-1,
-        	.quadhd_io_num=-1,
-        	.max_transfer_sz=96 * 8 *16
-    	};
-	*/
     	spi_device_interface_config_t devcfg={
         	.clock_speed_hz=3200000,           //Clock out at 3.2 MHz
         	.mode=0,                                //SPI mode 0
         	.spics_io_num=PIN_NUM_CS,               //CS pin
         	.queue_size=7,                          //We want to be able to queue 7 transactions at a time
     	};
-	/*
-    	spi_device_interface_config_t devcfg_1={
-        	.clock_speed_hz=3200000,           //Clock out at 3.2 MHz
-        	.mode=0,                                //SPI mode 0
-        	.spics_io_num=PIN_NUM_CS_1,               //CS pin
-        	.queue_size=7,                          //We want to be able to queue 7 transactions at a time
-    	};
-	*/
     	//Initialize the SPI bus
     	ret=spi_bus_initialize(HSPI_HOST, &buscfg, 1);
     	ESP_ERROR_CHECK(ret);
-    	//ret=spi_bus_initialize(HSPI_HOST, &buscfg_1, 2);
-    	//ESP_ERROR_CHECK(ret);
     	//Attach the LCD to the SPI bus
     	ret=spi_bus_add_device(HSPI_HOST, &devcfg, &spi);
-    	//ret=spi_bus_add_device(HSPI_HOST, &devcfg_1, &spi_1);
     	//ESP_ERROR_CHECK(ret); 
     	memset(&t, 0, sizeof(t));       //Zero out the transaction
     	t.length= 8 * 96 * 8;                 //Len is in bytes, transaction length is in bits.
-    	//memset(&t_1, 0, sizeof(t_1));       //Zero out the transaction
-    	//t_1.length= 8 * 96 * 8;                 //Len is in bytes, transaction length is in bits.
     	printf("turn on all the led lights\n");
 	for(index = 0; index < 3; index ++ )
 	{
 
 		for(cnt = 0; cnt < 3 * LED_NUM *8; cnt++) {
 			tmp[cnt] = 0x80;
-	//		tmp_1[cnt] = 0x80;
 		}	
 		t.tx_buffer=&tmp;               //Data
-	//	t_1.tx_buffer=&tmp_1;               //Data
     		ret=spi_device_polling_transmit(spi, &t);  //Transmit!
     		assert(ret==ESP_OK); 
-    	//	ret_1=spi_device_polling_transmit(spi_1, &t_1);  //Transmit!
-    	//	assert(ret_1==ESP_OK); 
         	vTaskDelay(1000 / portTICK_RATE_MS);
 		for(cnt = 0; cnt < 3 * LED_NUM *8; cnt++) {
 			tmp[cnt] = 0xf0;
-			tmp_1[cnt] = 0xf0;
 		}	
 		t.tx_buffer=&tmp;               //Data
-	//	t.tx_buffer=&tmp_1;               //Data
     		ret=spi_device_polling_transmit(spi, &t);  //Transmit!
     		assert(ret==ESP_OK); 
-    	//	ret_1=spi_device_polling_transmit(spi_1, &t_1);  //Transmit!
-    	//	assert(ret_1==ESP_OK); 
         	vTaskDelay(1000 / portTICK_RATE_MS);
 	}
 
